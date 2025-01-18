@@ -1,6 +1,6 @@
-{
-  [
-    "name" : "MateChat",
-    "repo" : "https://github.com/dvhsh/matechat"
-  ]
-}
+[
+  {
+    "name": "MateChat",
+    "repo": "https://github.com/dvhsh/matechat"
+  }
+]
