@@ -9,6 +9,14 @@
   },
   {
     "name": "BepInCharacterSwapper",
-    "repo" :"https://github.com/EBro912/BepInCharacterSwapper"
+    "repo": "https://github.com/EBro912/BepInCharacterSwapper"
+  },
+  {
+    "name": "Avatar Closet",
+    "repo": "https://github.com/SilverMoonDev/DesktopMate-Clothes-Toggler-Mod"
+  },
+  {
+    "name": "Disable Avatar Shadows",
+    "repo": "https://github.com/SilverMoonDev/DesktopMate-Disable-Shadows-Performance-Mod"
   }
 ]
