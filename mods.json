@@ -6,5 +6,9 @@
   {
     "name": "CustomAvatarLoader",
     "repo": "https://github.com/YusufOzmen01/desktopmate-custom-avatar-loader"
+  },
+  {
+    "name": "BepInCharacterSwapper",
+    "repo" :"https://github.com/EBro912/BepInCharacterSwapper"
   }
 ]
