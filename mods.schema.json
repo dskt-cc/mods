@@ -1,5 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://dskt.cc/schemas/mods.json",
+  "title": "Mods List",
+  "description": "A list of Desktop Mate mods",
   "type": "array",
   "items": {
     "type": "object",
