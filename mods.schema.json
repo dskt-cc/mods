@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "repo"],
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Name of the mod",
+        "minLength": 1
+      },
+      "repo": {
+        "type": "string",
+        "pattern": "^https://github\\.com/[a-zA-Z0-9-]+/[a-zA-Z0-9-_\\.]+$",
+        "description": "GitHub repository URL"
+      }
+    },
+    "additionalProperties": false
+  },
+  "uniqueItems": true
+}
