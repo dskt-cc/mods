@@ -11,12 +11,11 @@ addFormats(ajv);
 const dsktSchema = JSON.parse(fs.readFileSync('dskt.schema.json', 'utf8'));
 const validateDskt = ajv.compile(dsktSchema);
 
-async function validateDsktJson(repo) {
+async function fetchDsktJson(owner, name, branch) {
   return new Promise((resolve, reject) => {
-    const [owner, name] = repo.replace('https://github.com/', '').split('/');
     const options = {
       hostname: 'raw.githubusercontent.com',
-      path: `/${owner}/${name}/main/dskt.json`,
+      path: `/${owner}/${name}/${branch}/dskt.json`,
       headers: {
         'User-Agent': 'Node.js'
       }
@@ -24,7 +23,7 @@ async function validateDsktJson(repo) {
 
     https.get(options, (res) => {
       if (res.statusCode === 404) {
-        reject(new Error(`dskt.json not found in repository: ${repo}`));
+        reject(new Error('Not found'));
         return;
       }
 
@@ -33,18 +32,9 @@ async function validateDsktJson(repo) {
       res.on('end', () => {
         try {
           const dsktJson = JSON.parse(data);
-          
-          if (!validateDskt(dsktJson)) {
-            const errors = validateDskt.errors.map(err => 
-              `${err.instancePath} ${err.message}`
-            ).join('\n');
-            reject(new Error(`Invalid dskt.json schema in repository ${repo}:\n${errors}`));
-            return;
-          }
-
           resolve(dsktJson);
         } catch (error) {
-          reject(new Error(`Invalid JSON in dskt.json for repository: ${repo}`));
+          reject(new Error('Invalid JSON'));
         }
       });
     }).on('error', (error) => {
@@ -53,9 +43,37 @@ async function validateDsktJson(repo) {
   });
 }
 
+async function validateDsktJson(repo) {
+  const [owner, name] = repo.replace('https://github.com/', '').split('/');
+  
+  // Try main branch first, then master
+  for (const branch of ['main', 'master']) {
+    try {
+      console.log(`Checking ${branch} branch for ${repo}`);
+      const dsktJson = await fetchDsktJson(owner, name, branch);
+      
+      if (!validateDskt(dsktJson)) {
+        const errors = validateDskt.errors.map(err => 
+          `${err.instancePath} ${err.message}`
+        ).join('\n');
+        throw new Error(`Invalid dskt.json schema:\n${errors}`);
+      }
+
+      return dsktJson;
+    } catch (error) {
+      if (branch === 'master') {
+        // If we've tried both branches and still failed, throw the error
+        throw new Error(`dskt.json not found in repository (tried both main and master branches): ${repo}`);
+      }
+      // If we're on 'main' branch and it failed, continue to try 'master'
+      console.log(`Not found in ${branch} branch, trying next...`);
+    }
+  }
+}
+
 async function main() {
   try {
-    // Read current and previous mods.json
+    // Read current mods.json
     const currentMods = JSON.parse(fs.readFileSync('mods.json', 'utf8'));
     
     // Get the most recently added mod (last in the array)
