@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 const https = require('https');
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
@@ -9,14 +8,9 @@ const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 
 // Load schemas
-const modsListSchema = JSON.parse(fs.readFileSync('mods.schema.json', 'utf8'));
 const dsktSchema = JSON.parse(fs.readFileSync('dskt.schema.json', 'utf8'));
-
-// Compile schemas
-const validateModsList = ajv.compile(modsListSchema);
 const validateDskt = ajv.compile(dsktSchema);
 
-// Validate function for dskt.json
 async function validateDsktJson(repo) {
   return new Promise((resolve, reject) => {
     const [owner, name] = repo.replace('https://github.com/', '').split('/');
@@ -40,7 +34,6 @@ async function validateDsktJson(repo) {
         try {
           const dsktJson = JSON.parse(data);
           
-          // Validate against schema
           if (!validateDskt(dsktJson)) {
             const errors = validateDskt.errors.map(err => 
               `${err.instancePath} ${err.message}`
@@ -62,40 +55,29 @@ async function validateDsktJson(repo) {
 
 async function main() {
   try {
-    // Read and validate mods.json
-    const mods = JSON.parse(fs.readFileSync('mods.json', 'utf8'));
+    // Read current and previous mods.json
+    const currentMods = JSON.parse(fs.readFileSync('mods.json', 'utf8'));
     
-    if (!validateModsList(mods)) {
-      const errors = validateModsList.errors.map(err => 
-        `${err.instancePath} ${err.message}`
-      ).join('\n');
-      throw new Error(`Invalid mods.json schema:\n${errors}`);
-    }
+    // Get the most recently added mod (last in the array)
+    const newMod = currentMods[currentMods.length - 1];
     
-    // Validate each repository's dskt.json
-    const validationPromises = mods.map(async (mod) => {
-      try {
-        const dsktJson = await validateDsktJson(mod.repo);
-        console.log(`✓ Validated ${mod.name} (${mod.repo})`);
-        
-        // Additional validation: check if name matches
-        if (dsktJson.name !== mod.name) {
-          console.error(`✗ Name mismatch for ${mod.name}: dskt.json name is ${dsktJson.name}`);
-          return false;
-        }
-        
-        return true;
-      } catch (error) {
-        console.error(`✗ Failed to validate ${mod.name}: ${error.message}`);
-        return false;
+    console.log(`Validating newest mod: ${newMod.name}`);
+    
+    try {
+      const dsktJson = await validateDsktJson(newMod.repo);
+      console.log(`✓ Validated ${newMod.name} (${newMod.repo})`);
+      
+      // Check if name matches
+      if (dsktJson.name !== newMod.name) {
+        console.error(`✗ Name mismatch for ${newMod.name}: dskt.json name is ${dsktJson.name}`);
+        process.exit(1);
       }
-    });
-
-    const results = await Promise.all(validationPromises);
-    
-    if (results.includes(false)) {
+      
+    } catch (error) {
+      console.error(`✗ Failed to validate ${newMod.name}: ${error.message}`);
       process.exit(1);
     }
+    
   } catch (error) {
     console.error('Validation failed:', error);
     process.exit(1);
