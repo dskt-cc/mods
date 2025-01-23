@@ -25,6 +25,7 @@ jobs:
         run: |
           npm install -g ajv-cli
           npm install -g ajv-formats
+          npm install ajv ajv-formats
 
       - name: Validate mods.json
         run: |
