@@ -1,9 +1,5 @@
 [
   {
-    "name": "MateChat",
-    "repo": "https://github.com/dvhsh/matechat"
-  },
-  {
     "name": "CustomAvatarLoader",
     "repo": "https://github.com/YusufOzmen01/desktopmate-custom-avatar-loader"
   },
