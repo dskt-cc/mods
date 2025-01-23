@@ -11,6 +11,38 @@ addFormats(ajv);
 const dsktSchema = JSON.parse(fs.readFileSync('dskt.schema.json', 'utf8'));
 const validateDskt = ajv.compile(dsktSchema);
 
+async function getDefaultBranch(owner, name) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.github.com',
+      path: `/repos/${owner}/${name}`,
+      headers: {
+        'User-Agent': 'Node.js',
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    };
+
+    https.get(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const repoData = JSON.parse(data);
+          if (repoData.default_branch) {
+            resolve(repoData.default_branch);
+          } else {
+            reject(new Error('Could not determine default branch'));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }).on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
 async function fetchDsktJson(owner, name, branch) {
   return new Promise((resolve, reject) => {
     const options = {
@@ -20,6 +52,8 @@ async function fetchDsktJson(owner, name, branch) {
         'User-Agent': 'Node.js'
       }
     };
+
+    console.log(`Checking ${branch} branch at: ${options.hostname}${options.path}`);
 
     https.get(options, (res) => {
       if (res.statusCode === 404) {
@@ -46,10 +80,34 @@ async function fetchDsktJson(owner, name, branch) {
 async function validateDsktJson(repo) {
   const [owner, name] = repo.replace('https://github.com/', '').split('/');
   
-  // Try main branch first, then master
-  for (const branch of ['main', 'master']) {
+  // Try to get the default branch first
+  try {
+    const defaultBranch = await getDefaultBranch(owner, name);
+    console.log(`Detected default branch: ${defaultBranch}`);
+    
     try {
-      console.log(`Checking ${branch} branch for ${repo}`);
+      const dsktJson = await fetchDsktJson(owner, name, defaultBranch);
+      
+      if (!validateDskt(dsktJson)) {
+        const errors = validateDskt.errors.map(err => 
+          `${err.instancePath} ${err.message}`
+        ).join('\n');
+        throw new Error(`Invalid dskt.json schema:\n${errors}`);
+      }
+
+      return dsktJson;
+    } catch (error) {
+      console.log(`Not found in default branch (${defaultBranch}), trying fallback branches...`);
+    }
+  } catch (error) {
+    console.log('Could not determine default branch, trying fallback branches...');
+  }
+
+  // Fallback to checking common branch names
+  const fallbackBranches = ['main', 'master', 'development', 'dev'];
+  
+  for (const branch of fallbackBranches) {
+    try {
       const dsktJson = await fetchDsktJson(owner, name, branch);
       
       if (!validateDskt(dsktJson)) {
@@ -61,11 +119,9 @@ async function validateDsktJson(repo) {
 
       return dsktJson;
     } catch (error) {
-      if (branch === 'master') {
-        // If we've tried both branches and still failed, throw the error
-        throw new Error(`dskt.json not found in repository (tried both main and master branches): ${repo}`);
+      if (branch === fallbackBranches[fallbackBranches.length - 1]) {
+        throw new Error(`dskt.json not found in repository (tried branches: ${fallbackBranches.join(', ')}): ${repo}`);
       }
-      // If we're on 'main' branch and it failed, continue to try 'master'
       console.log(`Not found in ${branch} branch, trying next...`);
     }
   }
@@ -73,10 +129,7 @@ async function validateDsktJson(repo) {
 
 async function main() {
   try {
-    // Read current mods.json
     const currentMods = JSON.parse(fs.readFileSync('mods.json', 'utf8'));
-    
-    // Get the most recently added mod (last in the array)
     const newMod = currentMods[currentMods.length - 1];
     
     console.log(`Validating newest mod: ${newMod.name}`);
@@ -85,7 +138,6 @@ async function main() {
       const dsktJson = await validateDsktJson(newMod.repo);
       console.log(`✓ Validated ${newMod.name} (${newMod.repo})`);
       
-      // Check if name matches
       if (dsktJson.name !== newMod.name) {
         console.error(`✗ Name mismatch for ${newMod.name}: dskt.json name is ${dsktJson.name}`);
         process.exit(1);
