@@ -26,7 +26,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["Performance", "QualityOfLife", "Content", "Overhaul", "Other"]
+        "enum": ["Performance", "QualityOfLife", "Quality Of Life", "Content", "Overhaul", "Other"]
       },
       "minItems": 1,
       "uniqueItems": true,
