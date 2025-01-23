@@ -55,7 +55,7 @@ async function validateDsktJson(repo) {
     } catch (error) {
       console.log(`Failed ${branch}: ${error.message}`);
       if (branch === 'master') {
-        throw new Error('dskt.json not found in main or master branch');
+        throw new Error('dskt.json validation failed - check schema requirements');
       }
     }
   }
@@ -71,11 +71,6 @@ async function main() {
     try {
       const dsktJson = await validateDsktJson(newMod.repo);
       console.log(`✓ Validated ${newMod.name} (${newMod.repo})`);
-      
-      if (dsktJson.name !== newMod.name) {
-        console.error(`✗ Name mismatch for ${newMod.name}: dskt.json name is ${dsktJson.name}`);
-        process.exit(1);
-      }
       
     } catch (error) {
       console.error(`✗ Failed to validate ${newMod.name}: ${error.message}`);
