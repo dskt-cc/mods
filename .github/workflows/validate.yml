@@ -23,15 +23,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm install -g ajv-cli
-          npm install -g ajv-formats
           npm install ajv ajv-formats
 
-      - name: Validate mods.json
+      - name: Validate mods.json Format
         run: |
-          ajv validate -s mods.schema.json -d mods.json --spec=draft2019 --strict=false
+          npx ajv validate -s mods.schema.json -d mods.json --spec=draft2019 --strict=false
 
-      - name: Validate Mod Repositories
+      - name: Validate New Mod Repository
         run: |
           node .github/scripts/validate-repos.js
-
