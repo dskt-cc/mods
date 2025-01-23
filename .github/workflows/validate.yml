@@ -1,0 +1,36 @@
+name: Validate Mods
+
+on:
+  pull_request:
+    paths:
+      - 'mods.json'
+  push:
+    branches:
+      - main
+    paths:
+      - 'mods.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: |
+          npm install -g ajv-cli
+          npm install -g ajv-formats
+
+      - name: Validate mods.json
+        run: |
+          ajv validate -s mods.schema.json -d mods.json --spec=draft2019 --strict=false
+
+      - name: Validate Mod Repositories
+        run: |
+          node .github/scripts/validate-repos.js
+
