@@ -1,86 +1,42 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["name", "meta"],
+  "required": ["author", "version", "type", "category", "description"],
   "properties": {
-    "name": {
+    "author": {
       "type": "string",
-      "minLength": 1,
-      "description": "Mod name (must match repository name)"
+      "pattern": "^[a-zA-Z0-9-]+$",
+      "description": "GitHub username of the author"
     },
-    "meta": {
-      "type": "object",
-      "required": ["description", "author", "category", "type", "version"],
-      "properties": {
-        "description": {
-          "type": "string",
-          "minLength": 10,
-          "maxLength": 500,
-          "description": "Brief description of the mod"
-        },
-        "author": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9-]+$",
-          "description": "GitHub username of the author"
-        },
-        "category": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["Performance", "QualityOfLife", "Content", "Overhaul", "Other"]
-          },
-          "minItems": 1,
-          "uniqueItems": true,
-          "description": "Categories this mod belongs to"
-        },
-        "type": {
-          "type": "string",
-          "enum": ["MelonLoader", "BepInEx", "Both"],
-          "description": "Mod loader type"
-        },
-        "version": {
-          "type": "string",
-          "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+)?$",
-          "description": "Semantic version of the mod"
-        }
-      }
+    "discord": {
+      "type": "string",
+      "description": "Discord user ID (optional)"
     },
-    "locale": {
-      "type": "object",
-      "required": ["default", "supported"],
-      "properties": {
-        "default": {
-          "type": "string",
-          "pattern": "^[a-z]{2}-[A-Z]{2}$",
-          "description": "Default language code"
-        },
-        "supported": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-z]{2}-[A-Z]{2}$"
-          },
-          "uniqueItems": true,
-          "description": "Supported language codes"
-        }
-      }
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+)?$",
+      "description": "Semantic version of the mod"
     },
-    "sponsor": {
-      "type": "object",
-      "required": ["name", "url"],
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Sponsor name"
-        },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "pattern": "^https?://",
-          "description": "Sponsor website URL"
-        }
-      }
+    "type": {
+      "type": "string",
+      "enum": ["MelonLoader", "BepInEx", "Both"],
+      "description": "Mod loader type"
+    },
+    "category": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["Performance", "QualityOfLife", "Content", "Overhaul", "Other"]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Categories this mod belongs to"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500,
+      "description": "Brief description of the mod"
     }
   }
 }
