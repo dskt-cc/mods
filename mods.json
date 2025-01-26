@@ -18,5 +18,9 @@
   {
     "name": "DisableAvatarShadows",
     "repo": "https://github.com/SilverMoonDev/DesktopMate-Disable-Shadows-Performance-Mod"
+  },
+  {
+    "name": "MFrameworkLoader",
+    "repo": "https://github.com/MidgetBrony/MFrameWorkLoader"
   }
 ]
