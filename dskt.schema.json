@@ -37,6 +37,15 @@
       "minLength": 10,
       "maxLength": 500,
       "description": "Brief description of the mod"
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Mod name from the official mod list"
+      },
+      "uniqueItems": true,
+      "description": "List of required mods by their official names"
     }
   }
 }
