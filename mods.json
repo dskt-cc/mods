@@ -22,5 +22,9 @@
   {
     "name": "MFrameworkLoader",
     "repo": "https://github.com/MidgetBrony/MFrameWorkLoader"
+  },
+  {
+    "name": "NoSteam",
+    "repo": "https://github.com/Rafacasari/DesktopMate-NoSteam"
   }
 ]
